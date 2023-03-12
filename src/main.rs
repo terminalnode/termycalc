@@ -1,17 +1,23 @@
 mod state;
 
 use std::cell::RefCell;
-use std::num::ParseIntError;
 use std::rc::Rc;
 use gtk::prelude::*;
-use gtk::{glib, Application, ApplicationWindow, Button, Grid};
+use gtk::{
+    glib::ExitCode,
+    Application,
+    ApplicationWindow,
+    Button,
+    Grid,
+    Label,
+};
 use crate::state::State;
 
 const APP_ID: &str = "xyz.terminalnode.TermyCalc";
 const BUTTON_MARGIN: i32 = 3;
 const GRID_MARGIN: i32 = 3;
 
-fn main() -> glib::ExitCode {
+fn main() -> ExitCode {
     let app = Application::builder()
         .application_id(APP_ID)
         .build();
@@ -25,6 +31,10 @@ fn build_ui(
     app: &Application,
     state: Rc<RefCell<State>>,
 ) {
+    let label = Label::builder()
+        .label(state.borrow().get_display())
+        .build();
+
     let grid = Grid::builder()
         .margin_start(GRID_MARGIN)
         .margin_end(GRID_MARGIN)
@@ -33,19 +43,22 @@ fn build_ui(
         .row_spacing(GRID_MARGIN)
         .column_spacing(GRID_MARGIN)
         .build();
-    grid.attach(&number_button(1, state.clone()), 0, 0, 1, 1);
-    grid.attach(&number_button(2, state.clone()), 1, 0, 1, 1);
-    grid.attach(&number_button(3, state.clone()), 2, 0, 1, 1);
 
-    grid.attach(&number_button(4, state.clone()), 0, 1, 1, 1);
-    grid.attach(&number_button(5, state.clone()), 1, 1, 1, 1);
-    grid.attach(&number_button(6, state.clone()), 2, 1, 1, 1);
+    grid.attach(&label, 0, 0, 3, 1);
 
-    grid.attach(&number_button(7, state.clone()), 0, 2, 1, 1);
-    grid.attach(&number_button(8, state.clone()), 1, 2, 1, 1);
-    grid.attach(&number_button(9, state.clone()), 2, 2, 1, 1);
+    grid.attach(&number_button(1, state.clone()), 0, 1, 1, 1);
+    grid.attach(&number_button(2, state.clone()), 1, 1, 1, 1);
+    grid.attach(&number_button(3, state.clone()), 2, 1, 1, 1);
 
-    grid.attach(&number_button(0, state.clone()), 0, 3, 2, 1);
+    grid.attach(&number_button(4, state.clone()), 0, 2, 1, 1);
+    grid.attach(&number_button(5, state.clone()), 1, 2, 1, 1);
+    grid.attach(&number_button(6, state.clone()), 2, 2, 1, 1);
+
+    grid.attach(&number_button(7, state.clone()), 0, 3, 1, 1);
+    grid.attach(&number_button(8, state.clone()), 1, 3, 1, 1);
+    grid.attach(&number_button(9, state.clone()), 2, 3, 1, 1);
+
+    grid.attach(&number_button(0, state.clone()), 0, 4, 2, 1);
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -70,7 +83,7 @@ fn number_button(
         .build();
 
     button.connect_clicked(move |_| {
-        let mut x = &mut *state.borrow_mut();
+        let x = &mut *state.borrow_mut();
         x.append(number)
     });
 
