@@ -11,7 +11,7 @@ use gtk::{
     Grid,
     Label,
 };
-use crate::state::State;
+use crate::state::{Operation, State};
 
 const APP_ID: &str = "xyz.terminalnode.TermyCalc";
 const BUTTON_MARGIN: i32 = 3;
@@ -31,7 +31,7 @@ fn build_ui(
     app: &Application,
     state: Rc<RefCell<State>>,
 ) {
-    let label = Label::builder()
+    let display = Label::builder()
         .label(state.borrow().get_display())
         .build();
 
@@ -44,22 +44,28 @@ fn build_ui(
         .column_spacing(GRID_MARGIN)
         .build();
 
-    grid.attach(&label, 0, 0, 3, 1);
+    grid.attach(&display, 0, 0, 4, 1);
 
-    grid.attach(&number_button('1', state.clone()), 0, 1, 1, 1);
-    grid.attach(&number_button('2', state.clone()), 1, 1, 1, 1);
-    grid.attach(&number_button('3', state.clone()), 2, 1, 1, 1);
+    // Operation buttons
+    grid.attach(&operation_button(Operation::Addition, state.clone()), 0, 1, 1, 1);
+    grid.attach(&operation_button(Operation::Subtraction, state.clone()), 1, 1, 1, 1);
+    grid.attach(&operation_button(Operation::Multiplication, state.clone()), 2, 1, 1, 1);
+    grid.attach(&operation_button(Operation::Division, state.clone()), 3, 1, 1, 1);
+    grid.attach(&button(format!("C\nL\nR")), 3, 4, 1, 2);
+    grid.attach(&button(format!("=")), 3, 2, 1, 2);
 
-    grid.attach(&number_button('4', state.clone()), 0, 2, 1, 1);
-    grid.attach(&number_button('5', state.clone()), 1, 2, 1, 1);
-    grid.attach(&number_button('6', state.clone()), 2, 2, 1, 1);
-
-    grid.attach(&number_button('7', state.clone()), 0, 3, 1, 1);
-    grid.attach(&number_button('8', state.clone()), 1, 3, 1, 1);
-    grid.attach(&number_button('9', state.clone()), 2, 3, 1, 1);
-
-    grid.attach(&number_button('0', state.clone()), 0, 4, 2, 1);
-    grid.attach(&number_button('.', state.clone()), 2, 4, 1, 1);
+    // Number buttons
+    grid.attach(&number_button('1', state.clone()), 0, 2, 1, 1);
+    grid.attach(&number_button('2', state.clone()), 1, 2, 1, 1);
+    grid.attach(&number_button('3', state.clone()), 2, 2, 1, 1);
+    grid.attach(&number_button('4', state.clone()), 0, 3, 1, 1);
+    grid.attach(&number_button('5', state.clone()), 1, 3, 1, 1);
+    grid.attach(&number_button('6', state.clone()), 2, 3, 1, 1);
+    grid.attach(&number_button('7', state.clone()), 0, 4, 1, 1);
+    grid.attach(&number_button('8', state.clone()), 1, 4, 1, 1);
+    grid.attach(&number_button('9', state.clone()), 2, 4, 1, 1);
+    grid.attach(&number_button('0', state.clone()), 0, 5, 2, 1);
+    grid.attach(&number_button('.', state.clone()), 2, 5, 1, 1);
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -71,21 +77,40 @@ fn build_ui(
     window.present();
 }
 
-fn number_button(
-    digit: char,
-    state: Rc<RefCell<State>>,
+fn button(
+    label: String,
 ) -> Button {
-    let button = Button::builder()
-        .label(format!("{}", digit))
+    Button::builder()
+        .label(label)
         .margin_top(BUTTON_MARGIN)
         .margin_bottom(BUTTON_MARGIN)
         .margin_start(BUTTON_MARGIN)
         .margin_end(BUTTON_MARGIN)
-        .build();
+        .build()
+}
 
+fn number_button(
+    digit: char,
+    state: Rc<RefCell<State>>,
+) -> Button {
+    let button = button(format!("{}", digit));
     button.connect_clicked(move |_| {
         let x = &mut *state.borrow_mut();
         x.append(digit)
+    });
+
+    return button
+}
+
+fn operation_button(
+    operation: Operation,
+    state: Rc<RefCell<State>>,
+) -> Button {
+    let button = button(format!("{}", operation.to_char()));
+
+    button.connect_clicked(move |_| {
+        let x = &mut *state.borrow_mut();
+        x.set_operation(operation.clone())
     });
 
     return button

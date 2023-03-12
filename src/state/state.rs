@@ -37,6 +37,14 @@ impl State {
         println!("second_operand: {}", self.second_operand);
     }
 
+    pub fn set_operation(
+        &mut self,
+        operation: Operation,
+    ) {
+        self.operation = operation;
+        self.first_input = false;
+    }
+
     // TODO safe unwrap
     fn first_operand_as_f64(&self) -> Result<f64, String> {
         self.first_operand.parse::<f64>()
