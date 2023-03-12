@@ -73,7 +73,7 @@ fn build_ui(
         .child(&grid)
         .build();
 
-    window.set_default_size(400, 400);
+    window.set_default_size(grid.width(), grid.height());
     window.present();
 }
 
