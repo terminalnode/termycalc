@@ -71,9 +71,10 @@ fn build_ui(
         .application(app)
         .title("TermyCalc")
         .child(&grid)
+        .resizable(false)
+        .default_height(grid.height())
+        .default_width(grid.width())
         .build();
-
-    window.set_default_size(grid.width(), grid.height());
     window.present();
 }
 

@@ -27,7 +27,7 @@ impl Operation {
         match *self {
             Operation::Addition => '+',
             Operation::Multiplication => '×',
-            Operation::Subtraction => '—',
+            Operation::Subtraction => '-',
             Operation::Division => '÷',
         }
     }
