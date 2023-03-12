@@ -46,19 +46,20 @@ fn build_ui(
 
     grid.attach(&label, 0, 0, 3, 1);
 
-    grid.attach(&number_button(1, state.clone()), 0, 1, 1, 1);
-    grid.attach(&number_button(2, state.clone()), 1, 1, 1, 1);
-    grid.attach(&number_button(3, state.clone()), 2, 1, 1, 1);
+    grid.attach(&number_button('1', state.clone()), 0, 1, 1, 1);
+    grid.attach(&number_button('2', state.clone()), 1, 1, 1, 1);
+    grid.attach(&number_button('3', state.clone()), 2, 1, 1, 1);
 
-    grid.attach(&number_button(4, state.clone()), 0, 2, 1, 1);
-    grid.attach(&number_button(5, state.clone()), 1, 2, 1, 1);
-    grid.attach(&number_button(6, state.clone()), 2, 2, 1, 1);
+    grid.attach(&number_button('4', state.clone()), 0, 2, 1, 1);
+    grid.attach(&number_button('5', state.clone()), 1, 2, 1, 1);
+    grid.attach(&number_button('6', state.clone()), 2, 2, 1, 1);
 
-    grid.attach(&number_button(7, state.clone()), 0, 3, 1, 1);
-    grid.attach(&number_button(8, state.clone()), 1, 3, 1, 1);
-    grid.attach(&number_button(9, state.clone()), 2, 3, 1, 1);
+    grid.attach(&number_button('7', state.clone()), 0, 3, 1, 1);
+    grid.attach(&number_button('8', state.clone()), 1, 3, 1, 1);
+    grid.attach(&number_button('9', state.clone()), 2, 3, 1, 1);
 
-    grid.attach(&number_button(0, state.clone()), 0, 4, 2, 1);
+    grid.attach(&number_button('0', state.clone()), 0, 4, 2, 1);
+    grid.attach(&number_button('.', state.clone()), 2, 4, 1, 1);
 
     let window = ApplicationWindow::builder()
         .application(app)
@@ -71,11 +72,11 @@ fn build_ui(
 }
 
 fn number_button(
-    number: i32,
+    digit: char,
     state: Rc<RefCell<State>>,
 ) -> Button {
     let button = Button::builder()
-        .label(format!("{}", number))
+        .label(format!("{}", digit))
         .margin_top(BUTTON_MARGIN)
         .margin_bottom(BUTTON_MARGIN)
         .margin_start(BUTTON_MARGIN)
@@ -84,7 +85,7 @@ fn number_button(
 
     button.connect_clicked(move |_| {
         let x = &mut *state.borrow_mut();
-        x.append(number)
+        x.append(digit)
     });
 
     return button
