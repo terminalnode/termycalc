@@ -31,10 +31,6 @@ fn build_ui(
     app: &Application,
     state: Rc<RefCell<State>>,
 ) {
-    let display = Label::builder()
-        .label(state.borrow().get_display())
-        .build();
-
     let grid = Grid::builder()
         .margin_start(GRID_MARGIN)
         .margin_end(GRID_MARGIN)
@@ -44,7 +40,18 @@ fn build_ui(
         .column_spacing(GRID_MARGIN)
         .build();
 
+    let display = Label::builder()
+        .label(state.borrow().get_display())
+        .build();
     grid.attach(&display, 0, 0, 4, 1);
+    let rc_display = Rc::new(RefCell::new(display));
+    grid.attach(&*rc_display.borrow(), 0, 0, 4, 1);
+    state.borrow_mut().add_display_listener(Rc::new(RefCell::new(
+        move |txt: &str| {
+            println!("listener says: {}", txt);
+            rc_display.borrow_mut().set_label(&txt)
+        }
+    )));
 
     // Operation buttons
     grid.attach(&operation_button(Operation::Addition, state.clone()), 0, 1, 1, 1);

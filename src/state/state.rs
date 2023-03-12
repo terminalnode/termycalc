@@ -1,7 +1,10 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use crate::state::{Mode, Operation};
 
 pub struct State {
     display: String,
+    display_listeners: Vec<Rc<RefCell<dyn Fn(&str)>>>,
     first_input: bool,
     first_operand: String,
     second_operand: String,
@@ -13,11 +16,22 @@ impl State {
     pub fn default() -> Self {
         State {
             display: String::from("Start pressing buttons :-)"),
+            display_listeners: Vec::with_capacity(1),
             first_input: true,
             first_operand: String::from("0"),
             second_operand: String::from("0"),
             operation: Operation::Addition,
             mode: Mode::Clear,
+        }
+    }
+
+    fn set_display(
+        &mut self,
+        display: String,
+    ) {
+        self.display = display;
+        for listener in &self.display_listeners {
+            listener.borrow()(&self.display.clone())
         }
     }
 
@@ -27,12 +41,23 @@ impl State {
         &self.display
     }
 
+    pub fn add_display_listener(
+        &mut self,
+        listener: Rc<RefCell<dyn Fn(&str)>>,
+    ) {
+        self.display_listeners.push(listener);
+    }
+
     pub fn append(
         &mut self,
         digit: char,
     ) {
-        if self.first_input { self.first_operand = format!("{}{}", self.first_operand, digit) }
-        else { self.second_operand = format!("{}{}", self.second_operand, digit) }
+        if self.first_input {
+            self.first_operand = format!("{}{}", self.first_operand, digit)
+        } else {
+            self.second_operand = format!("{}{}", self.second_operand, digit)
+        }
+        self.set_display(format!("{}", self.first_operand));
         println!("first_operand: {}", self.first_operand);
         println!("second_operand: {}", self.second_operand);
     }
