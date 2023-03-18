@@ -1,15 +1,34 @@
 use std::cell::RefCell;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
+
 use crate::state::{Mode, Operation};
 
 pub struct State {
     display: String,
     display_listeners: Vec<Rc<RefCell<dyn Fn(&str)>>>,
-    first_input: bool,
-    first_operand: String,
-    second_operand: String,
+    result: Option<f64>,
+    input: String,
     operation: Operation,
     mode: Mode,
+}
+
+impl Debug for State {
+    fn fmt(
+        &self,
+        f: &mut Formatter<'_>,
+    ) -> fmt::Result {
+        write!(
+            f,
+            "State {{\n\tdisplay: {},\n\tresult: {:?},\n\tinput: {},\n\toperation: {},\n\tmode: {}\n}}",
+            self.display,
+            self.result,
+            self.input,
+            self.operation,
+            self.mode,
+        )
+    }
 }
 
 impl State {
@@ -17,14 +36,14 @@ impl State {
         State {
             display: String::from("Start pressing buttons :-)"),
             display_listeners: Vec::with_capacity(1),
-            first_input: true,
-            first_operand: String::from("0"),
-            second_operand: String::from("0"),
+            result: None,
+            input: String::from("0"),
             operation: Operation::Addition,
             mode: Mode::Clear,
         }
     }
 
+    // region internal
     fn set_display(
         &mut self,
         display: String,
@@ -34,10 +53,9 @@ impl State {
             listener.borrow()(&self.display.clone())
         }
     }
+    // endregion internal
 
-    pub fn get_display(
-        &self,
-    ) -> &str {
+    pub fn get_display(&self) -> &str {
         &self.display
     }
 
@@ -52,14 +70,15 @@ impl State {
         &mut self,
         digit: char,
     ) {
-        if self.first_input {
-            self.first_operand = format!("{}{}", self.first_operand, digit)
+        if self.input == "0" && (digit == '.' || digit == ',') {
+            self.input.push('.')
+        } else if self.input == "0" {
+            self.input = String::from(digit);
         } else {
-            self.second_operand = format!("{}{}", self.second_operand, digit)
+            self.input.push(digit);
         }
-        self.set_display(format!("{}", self.first_operand));
-        println!("first_operand: {}", self.first_operand);
-        println!("second_operand: {}", self.second_operand);
+
+        self.set_display(self.input.clone());
     }
 
     pub fn set_operation(
@@ -67,53 +86,46 @@ impl State {
         operation: Operation,
     ) {
         self.operation = operation;
-        self.first_input = false;
     }
 
-    // TODO safe unwrap
-    fn first_operand_as_f64(&self) -> Result<f64, String> {
-        self.first_operand.parse::<f64>()
+    fn result_as_f64(&self) -> Result<f64, String> {
+        self.result.ok_or(String::from("Result is None"))
+    }
+
+    fn input_as_f64(&self) -> Result<f64, String> {
+        self.input.parse::<f64>()
             .or_else(|_| Err(format!("Could not parse first operand as f64")))
     }
 
-    // TODO safe unwrap
-    fn second_operand_as_f64(&self) -> Result<f64, String> {
-        self.second_operand.parse::<f64>()
-            .or_else(|_| Err(format!("Could not parse second operand as f64")))
-    }
+    pub fn calculate(&mut self) {
+        // TODO safe unwrap lol
+        let first = self.result_as_f64().unwrap();
+        let second = self.input_as_f64().unwrap();
 
-    pub fn calculate(
-        &mut self,
-    ) {
-        let first = self.first_operand_as_f64();
-        let second = self.second_operand_as_f64();
-        match match self.operation {
-            Operation::Addition => { first.and_then(|f| second.map(|s| f + s)) }
-            Operation::Multiplication => { first.and_then(|f| second.map(|s| f * s)) }
-            Operation::Subtraction => { first.and_then(|f| second.map(|s| f - s)) }
-            Operation::Division => {
-                Ok(0.0) // TODO can't be bothered with rust error handling atm lol
-                // if self.second_operand == "0.0" { Ok(0.0) }
-                // else { Ok(first.and_then(|f| second.map(|s| f / s))) }
+        let result = match self.operation {
+            Operation::Addition => Ok(first + second),
+            Operation::Multiplication => Ok(first * second),
+            Operation::Subtraction => Ok(first - second),
+            Operation::Division => match second {
+                0.0 => { Err("Division by zero!".to_string()) }
+                _ => { Ok(first / second) }
             }
-        } {
+        };
+
+        match result {
             Ok(result) => {
-                let result = format!("{}", result);
-                self.display = result.clone();
-                self.first_operand = result;
-                self.second_operand = String::from("0");
+                self.display = format!("{}", result);
+                self.result = Some(result);
+                self.input = String::from("0");
             },
             Err(error) => {
                 self.display = format!("Error! {}", error);
-                self.first_operand = String::from("0");
-                self.second_operand = String::from("0");
+                self.result = None;
+                self.input = String::from("0");
+                self.operation = Operation::Addition;
             },
         };
 
-        println!("first_input: {}", self.first_input);
-        println!("first_operand: {}", self.first_operand);
-        println!("second_operand: {}", self.second_operand);
-        println!("operation: {}", self.operation);
-        println!("mode: {}", self.mode);
+        println!("{:?}", self);
     }
 }

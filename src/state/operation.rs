@@ -1,3 +1,4 @@
+use std::fmt;
 use std::fmt::{Display, Formatter};
 
 #[derive(Clone)]
@@ -12,7 +13,7 @@ impl Display for Operation {
     fn fmt(
         &self,
         f: &mut Formatter<'_>,
-    ) -> std::fmt::Result {
+    ) -> fmt::Result {
         match *self {
             Operation::Addition => f.write_str("Addition"),
             Operation::Multiplication => f.write_str("Multiplication"),
