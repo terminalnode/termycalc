@@ -74,6 +74,8 @@ impl State {
             self.input.push('.')
         } else if self.input == "0" {
             self.input = String::from(digit);
+        } else if self.input.contains('.') && (digit == '.' || digit == ',') {
+            // do nothing
         } else {
             self.input.push(digit);
         }
