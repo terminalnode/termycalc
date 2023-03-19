@@ -43,6 +43,7 @@ fn build_ui(
     let display = Label::builder()
         .label(state.borrow().get_display())
         .build();
+
     grid.attach(&display, 0, 0, 4, 1);
     let rc_display = Rc::new(RefCell::new(display));
     grid.attach(&*rc_display.borrow(), 0, 0, 4, 1);
@@ -58,7 +59,7 @@ fn build_ui(
     grid.attach(&operation_button(Operation::Subtraction, state.clone()), 1, 1, 1, 1);
     grid.attach(&operation_button(Operation::Multiplication, state.clone()), 2, 1, 1, 1);
     grid.attach(&operation_button(Operation::Division, state.clone()), 3, 1, 1, 1);
-    grid.attach(&button(format!("C\nL\nR")), 3, 4, 1, 2);
+    grid.attach(&clear_button(state.clone()), 3, 4, 1, 2);
     grid.attach(&button(format!("=")), 3, 2, 1, 2);
 
     // Number buttons
@@ -119,6 +120,19 @@ fn operation_button(
     button.connect_clicked(move |_| {
         let x = &mut *state.borrow_mut();
         x.set_operation(operation.clone())
+    });
+
+    return button
+}
+
+fn clear_button(
+    state: Rc<RefCell<State>>,
+) -> Button {
+    let button = button(format!("C\nL\nR"));
+
+    button.connect_clicked(move |_| {
+        let x = &mut *state.borrow_mut();
+        x.clear()
     });
 
     return button

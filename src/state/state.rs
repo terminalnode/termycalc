@@ -83,6 +83,13 @@ impl State {
         self.set_display(self.input.clone());
     }
 
+    pub fn clear(&mut self) {
+        self.result = None;
+        self.input = String::from("0");
+        self.operation = Operation::Addition;
+        self.set_display(self.input.clone());
+    }
+
     pub fn set_operation(
         &mut self,
         operation: Operation,
@@ -121,10 +128,8 @@ impl State {
                 self.input = String::from("0");
             },
             Err(error) => {
+                self.clear();
                 self.display = format!("Error! {}", error);
-                self.result = None;
-                self.input = String::from("0");
-                self.operation = Operation::Addition;
             },
         };
 
